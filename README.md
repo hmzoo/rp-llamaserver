@@ -93,6 +93,27 @@ Notes:
 - Ne pas mettre `-hf`, `-m`, `-mm` ni `--port` dans `LLAMA_SERVER_CMD_ARGS` quand vous utilisez les variables de cache ci-dessus.
 - `--mmproj-auto` est généralement activé par défaut, mais il est laissé ici explicitement pour un comportement clair.
 
+### Paramètres Runpod manquants (UI Endpoint)
+
+- Container start command:
+  - Recommandé: laisser vide (le Dockerfile a déjà `ENTRYPOINT ["/bin/sh", "-c", "/work/start.sh"]`).
+  - Si vous devez forcer une valeur: `/bin/sh -c /work/start.sh`.
+
+- Container disk (GB):
+  - Minimum recommandé: `5`.
+  - Recommandé en pratique: `10` (plus confortable pour logs/fichiers temporaires).
+  - Le modèle HF en cache Runpod est stocké sous `/runpod-volume/...` et ne dépend pas principalement de ce disque container.
+
+- Expose HTTP ports:
+  - Aucun port à exposer pour ce worker serverless.
+
+- Expose TCP ports:
+  - Aucun port à exposer.
+
+Pourquoi aucun port:
+- `llama-server` écoute en interne sur `3098` et est consommé localement par le handler Python.
+- Runpod Serverless communique avec le worker via le runtime Runpod, pas via un port public de votre conteneur.
+
 ## Pourquoi le cache est recommandé
 
 Sans cache, chaque nouveau worker peut retélécharger le modèle HF au démarrage, ce qui augmente latence et coûts. Le mécanisme de cache Runpod réduit fortement ce temps de warm-up.

@@ -19,16 +19,27 @@ def find_model_path(model_name, gguf_in_repo="model.gguf"):
         The full path to the cached model, or None if not found
     """
 
-    cache_name = model_name.replace("/", "--").lower()
-    snapshots_dir = os.path.join(
-        CACHE_DIR, f"models--{cache_name}", "snapshots"
-    )
+    cache_names = [model_name.replace("/", "--")]
+    lowercase_name = cache_names[0].lower()
 
-    if os.path.exists(snapshots_dir):
-        snapshots = os.listdir(snapshots_dir)
+    if lowercase_name != cache_names[0]:
+        cache_names.append(lowercase_name)
 
-        if snapshots:
-            return os.path.join(snapshots_dir, snapshots[0], gguf_in_repo)
+    for cache_name in cache_names:
+        snapshots_dir = os.path.join(
+            CACHE_DIR, f"models--{cache_name}", "snapshots"
+        )
+
+        if not os.path.exists(snapshots_dir):
+            continue
+
+        snapshots = sorted(os.listdir(snapshots_dir), reverse=True)
+
+        for snapshot in snapshots:
+            model_path = os.path.join(snapshots_dir, snapshot, gguf_in_repo)
+
+            if os.path.exists(model_path):
+                return model_path
 
     return None
 
