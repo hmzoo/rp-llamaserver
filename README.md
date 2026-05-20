@@ -219,6 +219,25 @@ Puis remplacer `...` dans le payload par la variable encodée.
 - Le worker renvoie des chunks de streaming au format `data: ...` quand `stream=true`.
 - Si `LLAMA_SERVER_CMD_ARGS` n’est pas défini, `src/start.sh` applique une valeur par défaut.
 
+## Logs de debug (modèle/cache)
+
+Les messages Runpod du type:
+- `image ready, model not found`
+- `image ready, initializing model files`
+- `image ready, model download failed`
+
+proviennent du runtime Runpod (pas directement de `llama-server`).
+
+Pour obtenir plus de détail côté worker, `src/start.sh` déclenche automatiquement un diagnostic quand la résolution du cache échoue (`LLAMA_CACHED_MODEL`, `LLAMA_CACHED_GGUF_PATH` ou `LLAMA_CACHED_MMPROJ_PATH`).
+
+Ce diagnostic affiche notamment:
+- le dossier de cache utilisé (`/runpod-volume/huggingface-cache/hub`),
+- les variantes de nom de modèle testées,
+- les snapshots trouvés,
+- les chemins de fichiers GGUF/mmproj réellement vérifiés.
+
+Vous verrez ces informations dans les logs du conteneur avec le préfixe `start.sh:`.
+
 ## Références
 
 - Source principale: https://github.com/Jacob-ML/inference-worker

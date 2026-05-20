@@ -32,6 +32,7 @@ CACHED_LLAMA_ARGS=""
 find_cached_path() {
     local model_path
     local mmproj_path
+    local debug_output
 
     log "Resolving cached model path for $LLAMA_CACHED_MODEL / $LLAMA_CACHED_GGUF_PATH"
 
@@ -39,6 +40,9 @@ find_cached_path() {
 
     if [ -z "$model_path" ] || [ "$model_path" = "None" ]; then
         log "Error: Cached model path not found for $LLAMA_CACHED_MODEL / $LLAMA_CACHED_GGUF_PATH"
+        log "Collecting cache lookup diagnostics..."
+        debug_output=$(python ./find_cached.py "$LLAMA_CACHED_MODEL" "$LLAMA_CACHED_GGUF_PATH" --debug 2>&1 >/dev/null || true)
+        echo "$debug_output" | sed 's/^/start.sh: /'
         exit 1
     fi
 
@@ -53,6 +57,9 @@ find_cached_path() {
 
         if [ -z "$mmproj_path" ] || [ "$mmproj_path" = "None" ]; then
             log "Error: Cached mmproj path not found for $LLAMA_CACHED_MODEL / $LLAMA_CACHED_MMPROJ_PATH"
+            log "Collecting mmproj lookup diagnostics..."
+            debug_output=$(python ./find_cached.py "$LLAMA_CACHED_MODEL" "$LLAMA_CACHED_MMPROJ_PATH" --debug 2>&1 >/dev/null || true)
+            echo "$debug_output" | sed 's/^/start.sh: /'
             exit 1
         fi
 
