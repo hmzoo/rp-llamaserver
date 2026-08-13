@@ -35,7 +35,9 @@ WORKDIR /work
 ADD ./src /work
 
 # Install runpod and its dependencies
-RUN pip install -r ./requirements.txt && chmod +x /work/start.sh
+# --ignore-installed avoids the "uninstall-no-record-file" error on the
+# Debian-provided cryptography package present in the base image.
+RUN python -m pip install --break-system-packages --ignore-installed -r ./requirements.txt && chmod +x /work/start.sh
 
 # Set the entrypoint
 ENTRYPOINT ["/bin/sh", "-c", "/work/start.sh"]
