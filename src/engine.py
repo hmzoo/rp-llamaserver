@@ -121,26 +121,30 @@ class LlamaCPPEngine:
         # differently and send it to the OpenAI API
         if isinstance(job_input.llm_input, str):
             # Build new JobInput object with the OpenAI route and input
+            openai_input = {
+                "model": model,
+                "prompt": job_input.llm_input,
+                "stream": job_input.stream,
+            }
+            openai_input.update(job_input.params)
             openAIjob = JobInput(
                 {
                     "openai_route": "/v1/completions",
-                    "openai_input": {
-                        "model": model,
-                        "prompt": job_input.llm_input,
-                        "stream": job_input.stream,
-                    },
+                    "openai_input": openai_input,
                 }
             )
         else:
             # Build new JobInput object with the OpenAI route and input
+            openai_input = {
+                "model": model,
+                "messages": job_input.llm_input,
+                "stream": job_input.stream,
+            }
+            openai_input.update(job_input.params)
             openAIjob = JobInput(
                 {
                     "openai_route": "/v1/chat/completions",
-                    "openai_input": {
-                        "model": model,
-                        "messages": job_input.llm_input,
-                        "stream": job_input.stream,
-                    },
+                    "openai_input": openai_input,
                 }
             )
 
