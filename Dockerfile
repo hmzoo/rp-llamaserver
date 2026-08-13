@@ -28,6 +28,17 @@ RUN apt-get update --yes --quiet && DEBIAN_FRONTEND=noninteractive apt-get insta
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Bake the model into the image so workers load it from local disk
+# (much faster than the RunPod /runpod-volume network volume).
+# Override at build time with --build-arg.
+ARG MODEL_GGUF_URL=https://huggingface.co/noctrex/Huihui-Qwen3-VL-8B-Instruct-abliterated-GGUF/resolve/main/Huihui-Qwen3-VL-8B-Instruct-abliterated-Q4_K_M.gguf
+ARG MMPROJ_URL=https://huggingface.co/noctrex/Huihui-Qwen3-VL-8B-Instruct-abliterated-GGUF/resolve/main/mmproj-F16.gguf
+
+RUN mkdir -p /models && \
+    curl -fL --retry 3 --retry-delay 5 -o /models/model.gguf "$MODEL_GGUF_URL" && \
+    curl -fL --retry 3 --retry-delay 5 -o /models/mmproj.gguf "$MMPROJ_URL" && \
+    ls -lh /models
+
 # Set the working directory
 WORKDIR /work
 

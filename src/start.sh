@@ -69,8 +69,18 @@ find_cached_path() {
     fi
 }
 
-# check if $LLAMA_CACHED_MODEL is set and not empty
-if [ -n "$LLAMA_CACHED_MODEL" ]; then
+# Baked-in model (local disk) takes priority over the RunPod cache.
+BAKED_MODEL="/models/model.gguf"
+BAKED_MMPROJ="/models/mmproj.gguf"
+
+if [ -f "$BAKED_MODEL" ]; then
+    log "Model baked into the Docker image found. Using local disk (fast load)."
+    CACHED_LLAMA_ARGS="-m $BAKED_MODEL"
+    if [ -f "$BAKED_MMPROJ" ]; then
+        CACHED_LLAMA_ARGS="$CACHED_LLAMA_ARGS --mmproj $BAKED_MMPROJ"
+    fi
+    log "Using baked model arguments: $CACHED_LLAMA_ARGS"
+elif [ -n "$LLAMA_CACHED_MODEL" ]; then
     log "Caching is enabled. Finding cached model path..."
     find_cached_path
 
