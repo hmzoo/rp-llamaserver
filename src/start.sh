@@ -133,8 +133,8 @@ check_server_is_running() {
         return 0 # success
     fi
 
-    if [ $tries_so_far -ge 120 ]; then
-        log "Error: llama-server did not start within 60 seconds."
+    if [ $tries_so_far -ge 360 ]; then
+        log "Error: llama-server did not start within 180 seconds."
         print_llama_log_tail
         exit 1
     fi

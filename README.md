@@ -86,12 +86,14 @@ Dans Runpod (Endpoint Serverless):
   - `LLAMA_CACHED_MODEL=Qwen/Qwen3-VL-4B-Instruct-GGUF`
   - `LLAMA_CACHED_GGUF_PATH=Qwen3VL-4B-Instruct-Q4_K_M.gguf`
   - `LLAMA_CACHED_MMPROJ_PATH=mmproj-Qwen3VL-4B-Instruct-Q8_0.gguf`
-  - `LLAMA_SERVER_CMD_ARGS=--ctx-size 8192 --temp 0.7 --top-p 0.8 --top-k 20 -ngl 999 --mmproj-auto`
+  - `LLAMA_SERVER_CMD_ARGS=--ctx-size 8192 --temp 0.7 --top-p 0.8 --top-k 20 -ngl 999 -fa on -np 8 -b 4096 -ub 1024 -ctk q8_0 -ctv q8_0`
   - `MAX_CONCURRENCY=8`
 
 Notes:
 - Ne pas mettre `-hf`, `-m`, `-mm` ni `--port` dans `LLAMA_SERVER_CMD_ARGS` quand vous utilisez les variables de cache ci-dessus.
-- `--mmproj-auto` est généralement activé par défaut, mais il est laissé ici explicitement pour un comportement clair.
+- `-np` doit correspondre à `MAX_CONCURRENCY` pour éviter la file d'attente côté llama.cpp.
+- `-ctk q8_0 -ctv q8_0` quantifie le cache KV : moins de VRAM, plus de marge pour les slots. À retirer si la qualité se dégrade.
+- `--mmproj-auto` est activé par défaut (le `-mm` est injecté automatiquement par `start.sh` via le cache) ; inutile de l'ajouter.
 
 ### Paramètres Runpod manquants (UI Endpoint)
 

@@ -20,16 +20,33 @@ Typical usage:
   formatted as strings when stream=True.
 """
 
+import asyncio
 import json
 
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import AsyncOpenAI
 from utils import JobInput
 
-client = OpenAI(
+client = AsyncOpenAI(
     base_url="http://localhost:3098/v1/",
     api_key="sk-local-dummy-key",
 )
+
+_model_id = None
+_model_id_lock = None
+
+
+async def get_model_id():
+    """Return the served model id, fetched once and cached."""
+    global _model_id, _model_id_lock
+    if _model_id is None:
+        if _model_id_lock is None:
+            _model_id_lock = asyncio.Lock()
+        async with _model_id_lock:
+            if _model_id is None:
+                models = await client.models.list()
+                _model_id = models.data[0].id
+    return _model_id
 
 
 class LlamaCPPEngine:
@@ -98,7 +115,7 @@ class LlamaCPPEngine:
         openAIEngine = LlamaCPPOpenAIEngine()
 
         # Get model to use (defaults to first model in list of models)
-        model = client.models.list().data[0].id
+        model = await get_model_id()
 
         # Depending if prompt is a string or a list, we need to handle it
         # differently and send it to the OpenAI API
@@ -224,7 +241,7 @@ class LlamaCPPOpenAIEngine(LlamaCPPEngine):
         """
 
         try:
-            response = client.models.list()
+            response = await client.models.list()
 
             yield {
                 "object": "list",
@@ -273,16 +290,16 @@ class LlamaCPPOpenAIEngine(LlamaCPPEngine):
             # Call openai.chat.completions.create or openai.completions.create
             # based on the route
             if chat:
-                response = client.chat.completions.create(**openai_input)
+                response = await client.chat.completions.create(**openai_input)
             else:
-                response = client.completions.create(**openai_input)
+                response = await client.completions.create(**openai_input)
 
             # If streaming is False, we can just return the response
             if not openai_input.get("stream", False):
                 yield response.to_dict()
                 return
 
-            for chunk in response:
+            async for chunk in response:
                 # Return json of the chunk without any line breaks
                 yield "data: " + json.dumps(
                     chunk.to_dict(), separators=(",", ":")

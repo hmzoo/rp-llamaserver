@@ -1,5 +1,7 @@
-# Use an official ggml-org/llama.cpp image as the base image
-FROM ghcr.io/ggml-org/llama.cpp:server-cuda
+# Use an official ggml-org/llama.cpp image as the base image.
+# Pin to a fixed build tag for reproducibility (CUDA 12 runtime, built with CUDA 12.8.1).
+# Do not use the rolling "server-cuda" tag in production: the embedded CUDA version may change.
+FROM ghcr.io/ggml-org/llama.cpp:server-cuda-b5343
 
 ENV PYTHONUNBUFFERED=1
 
