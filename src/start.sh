@@ -65,7 +65,7 @@ find_cached_path() {
 
         log "Resolved mmproj path: $mmproj_path"
 
-        CACHED_LLAMA_ARGS="$CACHED_LLAMA_ARGS -mm $mmproj_path"
+        CACHED_LLAMA_ARGS="$CACHED_LLAMA_ARGS --mmproj $mmproj_path"
     fi
 }
 
